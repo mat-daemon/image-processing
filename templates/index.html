@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shape recognizer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            border: 2px solid #007BFF;
+            background-color: white;
+            color: #007BFF;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        button.active {
+            background-color: #007BFF;
+            color: white;
+        }
+        .drop-zone {
+            width: 300px;
+            height: 200px;
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #999;
+            margin-bottom: 20px;
+        }
+        .drop-zone.dragover {
+            border-color: #333;
+            color: #333;
+        }
+    </style>
+
+    <style>
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .control-item > span{
+            min-width: 150px;
+        }
+
+        .toggle-container {
+            position: relative;
+        }
+
+        .toggle-button {
+            padding: 10px 20px;
+            border: 2px solid #007BFF;
+            background-color: white;
+            color: #007BFF;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .toggle-button.active {
+            background-color: #007BFF;
+            color: white;
+        }
+    </style>
+
+    <style>
+        .switch {
+            position: relative;
+ 
+            width: 60px;
+            height: 34px;
+        }
+
+        /* Hide default HTML checkbox */
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        /* The slider */
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(26px);
+            -ms-transform: translateX(26px);
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body>
+    <h1>Shape recognizer</h1>
+    
+    <div class="drop-zone" id="drop-zone">
+        Drag and drop the file or click and select one.
+    </div>
+
+    <div id="file-name"></div>
+    
+    <div class="image-display" id="image-display" style="display: none;">
+        <img id="image1" src="" alt="Podgląd zdjęcia">
+        <div id="image1" class="image-container"></div>
+        <div class="image-container"></div>
+    </div>
+
+    <button onclick="removeImage()" id="remove-image" type="submit" style="display: none;">Remove image</button>
+    
+    <form id="upload-form" onsubmit="uploadFile(event)" enctype="multipart/form-data">
+        <input type="file" name="file" id="file-input" accept="image/*" hidden>
+        <button type="submit">Detect shapes</button>
+    </form>
+
+    <div class="controls">
+        <div class="control-item">
+            <span>Edge detection:</span>
+            <div class="toggle-container">
+                <button class="toggle-button" onclick="selectOption(this)">Sobel</button>
+                <button class="toggle-button" onclick="selectOption(this)">Canny</button>
+            </div>
+        </div>
+
+        <div class="control-item">
+            <span>Gaussian blur:</span>
+            <label class="switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        
+        <div class="control-item">
+            <span>Dilate and erode:</span>
+            <label class="switch">
+                <input type="checkbox">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+
+    <!-- Dropping image utility -->
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const image1 = document.getElementById('image1');
+        const fileName = document.getElementById('file-name');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                fileName.textContent = fileInput.files[0].name;
+                fileName.style.display = null;
+            }
+        });
+
+    </script>
+
+    <!-- Toggler utility -->
+    <script>
+        function selectOption(button) {
+            // Remove 'active' class from all buttons
+            const buttons = document.querySelectorAll('.toggle-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // Add 'active' class to the clicked button
+            button.classList.add('active');
+        }
+    </script>
+
+    <!-- AJAX image transceiver -->
+    <script>
+        async function uploadFile(event) {
+            event.preventDefault(); // Zapobiega przeładowaniu strony
+            const form = event.target;
+            const formData = new FormData(form); // Tworzenie FormData z formularza
+            
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                console.log("PRZED")
+                if (response.ok) {
+                    console.log("OK")
+                    // Wyświetlanie przesłanego zdjęcia
+                    document.getElementById('drop-zone').style.display = 'none';
+                    document.getElementById('upload-form').style.display = 'none';
+                    document.getElementById('remove-image').style.display = null;
+
+                    const image1 = document.getElementById('image1');
+                    image1.src = result.file_url;
+                    document.getElementById('image-display').style.display = null;
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error while sending a file.');
+            }
+        }
+    </script>
+
+    <script>
+        function removeImage(){
+            const removeImageButton = document.getElementById('remove-image');
+            const image1 = document.getElementById('image1');
+            removeImageButton.style.display = "None";
+            image1.style.display = "none";
+            document.getElementById('drop-zone').style.display = null;
+        }
+    </script>
+
+</body>
+</html>
