@@ -188,7 +188,7 @@
         <div class="image-container" id="image2-container"><img id="image2" src="" alt="Image after processing"></div>
     </div>
 
-    <button onclick="removeImage()" id="remove-image" type="submit" style="display: none;">Remove image</button>
+    <button onclick="removeImage()" id="remove-image" type="submit" style="display: none;">Back</button>
     
     <form id="upload-form" onsubmit="uploadFile(event)" enctype="multipart/form-data">
         <input type="file" name="file" id="file-input" accept="image/*" hidden>
@@ -295,7 +295,7 @@
             event.preventDefault(); // Zapobiega przeładowaniu strony
             const form = event.target;
             const formData = new FormData(form); // Tworzenie FormData z formularza
-            
+            console.log(formData)
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
@@ -329,7 +329,7 @@
             document.getElementById('image-display').style.display = "none";
             document.getElementById('upload-form').style.display = null;
             document.getElementById('drop-zone').style.display = null;
-            document.getElementById('drop-zone').innerHTML = `Drag and drop the file here.`;
+            // document.getElementById('drop-zone').innerHTML = `Drag and drop the file here.`;
         }
     </script>
 
