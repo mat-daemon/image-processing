@@ -192,6 +192,9 @@
     
     <form id="upload-form" onsubmit="uploadFile(event)" enctype="multipart/form-data">
         <input type="file" name="file" id="file-input" accept="image/*" hidden>
+        <input type="hidden" name="edgeDetection" id="edgeDetectionInput">
+        <input type="hidden" name="gaussianBlur" id="gaussianBlurInput">
+        <input type="hidden" name="dilateErode" id="dilateErodeInput">
         <button type="submit">Detect shapes</button>
     </form>
 
@@ -199,15 +202,15 @@
         <div class="control-item">
             <span>Edge detection:</span>
             <div class="toggle-container">
-                <button class="toggle-button" onclick="selectOption(this)">Sobel</button>
-                <button class="toggle-button" onclick="selectOption(this)">Canny</button>
+                <button class="toggle-button" id="sobel-button" onclick="selectOption(this)" data-value="Sobel">Sobel</button>
+                <button class="toggle-button" id="canny-button" onclick="selectOption(this)" data-value="Canny">Canny</button>
             </div>
         </div>
 
         <div class="control-item">
             <span>Gaussian blur:</span>
             <label class="switch">
-                <input type="checkbox">
+                <input type="checkbox" id="gaussianBlur">
                 <span class="slider"></span>
             </label>
         </div>
@@ -216,7 +219,7 @@
         <div class="control-item">
             <span>Dilate and erode:</span>
             <label class="switch">
-                <input type="checkbox">
+                <input type="checkbox" id="dilateErode">
                 <span class="slider"></span>
             </label>
         </div>
@@ -257,6 +260,20 @@
             }
         });
 
+        document.getElementById('gaussianBlur').addEventListener('change', function() {
+            document.getElementById('gaussianBlurInput').value = this.checked;
+        });
+
+        document.getElementById('dilateErode').addEventListener('change', function() {
+            document.getElementById('dilateErodeInput').value = this.checked;
+        });
+
+        // Inicjalizacja wartości domyślnych
+        document.getElementById('sobel-button').classList.add('active');
+        document.getElementById('edgeDetectionInput').value = 'Sobel';
+        document.getElementById('gaussianBlurInput').value = false;
+        document.getElementById('dilateErodeInput').value = false;
+
     </script>
 
     <!-- Toggler utility -->
@@ -268,6 +285,7 @@
             
             // Add 'active' class to the clicked button
             button.classList.add('active');
+            document.getElementById('edgeDetectionInput').value = button.getAttribute('data-value');
         }
     </script>
 
@@ -284,15 +302,14 @@
                     body: formData
                 });
                 const result = await response.json();
-                console.log("PRZED")
+                
                 if (response.ok) {
-                    console.log("OK")
-                    // Wyświetlanie przesłanego zdjęcia
-                    console.log(result)
                     document.getElementById('drop-zone').style.display = 'none';
                     document.getElementById('upload-form').style.display = 'none';
                     document.getElementById('remove-image').style.display = null;
 
+                    document.getElementById('image1').src = "";
+                    document.getElementById('image2').src = "";
                     document.getElementById('image1').src = result.file_url1;
                     document.getElementById('image2').src = result.file_url2;
                     document.getElementById('image-display').style.display = null;

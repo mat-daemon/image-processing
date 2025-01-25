@@ -7,14 +7,13 @@ def sobel(image):
                          [1, 0, -1]])
 
     kernel_y = kernel_x.transpose()
-    
     image_height, image_width = image.shape
     kernel_height, kernel_width = kernel_x.shape
 
     pad_h = kernel_height // 2
     pad_w = kernel_width // 2
 
-    padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='constant', constant_values=0)
+    padded_image = np.pad(image, ((pad_h, pad_h), (pad_w, pad_w)), mode='edge')
 
     image_grad_x = np.zeros_like(image, dtype=np.float64)
     image_grad_y = np.zeros_like(image, dtype=np.float64)

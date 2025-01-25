@@ -26,6 +26,10 @@ def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
     
+    edge_detection = request.form.get('edgeDetection')
+    gaussian_blur = request.form.get('gaussianBlur') == 'true'
+    dilate_erode = request.form.get('dilateErode') == 'true' 
+    
     file = request.files['file']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
@@ -37,15 +41,15 @@ def upload_file():
         file.save(filepath)
 
         config_params = {}
-        config_params["GaussianBlur"] = False
-        config_params["Sobel"] = False
-        config_params["DilateAndError"] = False
+        config_params["gaussianBlur"] = gaussian_blur
+        config_params["edgeDetection"] = edge_detection
+        config_params["dilateAndErrode"] = dilate_erode
 
         filename1, filename2 = process_image(filepath, config_params)
 
         file_url1 = url_for('static', filename=f'processed/{filename1}', _external=True)
         file_url2 = url_for('static', filename=f'processed/{filename2}', _external=True)
-        app.logger.info(file_url1)
+
         return jsonify({'file_url1': file_url1, 'file_url2': file_url2}), 200
 
     return jsonify({'error': 'Invalid file type'}), 400
@@ -56,7 +60,6 @@ def uploaded_file(filename):
 
 @app.route('/processed/<filename>')
 def processed_file_file(filename):
-    app.logger.info("JESTEM")
     return redirect(url_for('static', filename=os.path.join('processed', filename)))
 
 if __name__ == '__main__':

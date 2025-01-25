@@ -55,18 +55,18 @@ def detect_shape(image, contour):
 
 def detect_shapes(image, config_params):
     image_gray = (color.rgb2gray(image) * 255).astype(np.uint8)
-
-    if config_params["GaussianBlur"]:
-        image_gray = cv2.GaussianBlur(image, (5, 5), 0) 
-
-    if config_params["Sobel"]:
+    
+    if config_params["gaussianBlur"]:
+        image_gray = cv2.GaussianBlur(image_gray, (5, 5), 0) 
+    
+    if config_params["edgeDetection"] == "Sobel":
         _, _, grad_magnitude = sobel(image_gray)
     else:
         grad_magnitude = cv2.Canny(image_gray, threshold1=100, threshold2=200)
 
     _, grad_magnitude = cv2.threshold(grad_magnitude, 70, 255, cv2.THRESH_BINARY)
 
-    if config_params["DilateAndError"]:
+    if config_params["dilateAndErrode"]:
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
         grad_magnitude = cv2.dilate(grad_magnitude, kernel, iterations=1)
         grad_magnitude = cv2.erode(grad_magnitude, kernel, iterations=1)
